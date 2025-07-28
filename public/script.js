@@ -390,11 +390,11 @@ function appendLog(data, avoid) {
 
 	// Handle file message display post-render
 	if (data.type === 'file' && data.fileInfo && !isServer) {
+		console.log('Processing file message:', data);
 		const messageText = $newMessage.find('.discord-message-text');
-		const currentText = messageText.html();
-		if (!currentText.includes('discord-media-message')) {
-			messageText.html(currentText + generateMediaHTML(data.fileInfo));
-		}
+		const mediaHTML = generateMediaHTML(data.fileInfo);
+		const fileDescription = data.message || `📎 ${data.fileInfo.originalName}`;
+		messageText.html(fileDescription + mediaHTML);
 	}
 
 	// Remove animation class after animation completes
