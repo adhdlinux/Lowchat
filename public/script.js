@@ -496,6 +496,8 @@ function removeFile(index) {
 function clearFilePreview() {
 	filesToUpload = [];
 	$('#filePreview').hide();
+	// Reset send button
+	$('#sendFiles').prop('disabled', false).text('Send');
 }
 
 function getFileIcon(mimeType) {
