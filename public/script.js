@@ -654,10 +654,11 @@ async function uploadVoiceMessage(blob) {
 
 		if (response.ok) {
 			const fileInfo = await response.json();
+			const mediaHTML = generateMediaHTML(fileInfo);
 			const message = {
 				type: 'file',
 				fileInfo: fileInfo,
-				message: `🎤 Voice message`
+				message: `🎤 Voice message${mediaHTML}`
 			};
 
 			client.emit('message', message);
