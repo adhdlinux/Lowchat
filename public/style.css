@@ -800,3 +800,127 @@ html, body {
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 0.875rem;
 }
+
+/* Media Messages */
+.discord-media-message {
+    margin-top: 8px;
+    max-width: 400px;
+}
+
+.discord-image-attachment {
+    border-radius: 8px;
+    max-width: 100%;
+    height: auto;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.discord-image-attachment:hover {
+    opacity: 0.9;
+}
+
+.discord-audio-attachment {
+    background-color: #2f3136;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #202225;
+    width: 100%;
+    max-width: 300px;
+}
+
+.discord-audio-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.discord-audio-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #5865f2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: #ffffff;
+}
+
+.discord-audio-details {
+    flex: 1;
+}
+
+.discord-audio-name {
+    color: #dcddde;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.discord-audio-size {
+    color: #72767d;
+    font-size: 0.75rem;
+}
+
+.discord-audio-controls {
+    width: 100%;
+}
+
+.discord-video-attachment {
+    border-radius: 8px;
+    max-width: 100%;
+    height: auto;
+    background-color: #000000;
+}
+
+.discord-file-attachment {
+    background-color: #2f3136;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #202225;
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+}
+
+.discord-file-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #4f545c;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: #dcddde;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.discord-file-info {
+    flex: 1;
+}
+
+.discord-file-name {
+    color: #dcddde;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.discord-file-size {
+    color: #72767d;
+    font-size: 0.75rem;
+}
+
+.discord-file-download {
+    background: none;
+    border: none;
+    color: #00aff4;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.discord-file-download:hover {
+    background-color: #36393f;
+}
