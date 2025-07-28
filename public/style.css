@@ -336,16 +336,52 @@ html, body {
 /* Chat Input */
 .discord-chat-input-container {
     padding: 0 16px 24px;
+    position: relative;
 }
 
 .discord-chat-input {
     background-color: #40444b;
     border-radius: 8px;
     padding: 0;
+    position: relative;
 }
 
 .discord-input-wrapper {
     padding: 11px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.discord-file-upload-btn, .discord-voice-record-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #b9bbbe;
+    background: transparent;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.discord-file-upload-btn:hover, .discord-voice-record-btn:hover {
+    background-color: #36393f;
+    color: #dcddde;
+}
+
+.discord-voice-record-btn.recording {
+    background-color: #ed4245;
+    color: #ffffff;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
 .discord-input {
@@ -355,7 +391,7 @@ html, body {
     color: #dcddde;
     font-size: 1rem;
     line-height: 1.375;
-    width: 100%;
+    flex: 1;
     resize: none;
     max-height: 144px;
     min-height: 24px;
@@ -365,6 +401,229 @@ html, body {
     content: attr(data-placeholder);
     color: #72767d;
     pointer-events: none;
+}
+
+/* File Preview */
+.discord-file-preview {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background-color: #2f3136;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid #202225;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.discord-file-preview-content {
+    padding: 16px;
+}
+
+.discord-file-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.discord-file-preview-close {
+    background: none;
+    border: none;
+    color: #b9bbbe;
+    font-size: 24px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.discord-file-preview-close:hover {
+    background-color: #ed4245;
+    color: #ffffff;
+}
+
+.discord-file-preview-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.discord-file-preview-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background-color: #36393f;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.discord-file-preview-thumbnail {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    margin-right: 12px;
+    object-fit: cover;
+    background-color: #40444b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b9bbbe;
+}
+
+.discord-file-preview-info {
+    flex: 1;
+}
+
+.discord-file-preview-name {
+    color: #dcddde;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.discord-file-preview-size {
+    color: #72767d;
+    font-size: 0.875rem;
+}
+
+.discord-file-preview-remove {
+    background: none;
+    border: none;
+    color: #ed4245;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.discord-file-preview-remove:hover {
+    background-color: #ed4245;
+    color: #ffffff;
+}
+
+.discord-file-preview-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* Voice Recording */
+.discord-voice-recording {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background-color: #2f3136;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid #202225;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.discord-voice-recording-content {
+    padding: 16px;
+}
+
+.discord-voice-recording-indicator {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    color: #dcddde;
+    font-weight: 500;
+}
+
+.discord-recording-dot {
+    width: 12px;
+    height: 12px;
+    background-color: #ed4245;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 1.5s infinite;
+}
+
+.discord-voice-recording-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* Buttons */
+.discord-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.discord-btn-primary {
+    background-color: #5865f2;
+    color: #ffffff;
+}
+
+.discord-btn-primary:hover {
+    background-color: #4752c4;
+}
+
+.discord-btn-secondary {
+    background-color: #4f545c;
+    color: #ffffff;
+}
+
+.discord-btn-secondary:hover {
+    background-color: #5d6269;
+}
+
+.discord-btn-danger {
+    background-color: #ed4245;
+    color: #ffffff;
+}
+
+.discord-btn-danger:hover {
+    background-color: #c03537;
+}
+
+/* Drag and Drop Overlay */
+.discord-drag-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.discord-drag-content {
+    text-align: center;
+    color: #ffffff;
+    padding: 32px;
+    border-radius: 8px;
+    border: 2px dashed #5865f2;
+    background-color: #2f3136;
+    max-width: 400px;
+}
+
+.discord-drag-icon {
+    margin-bottom: 16px;
+    color: #5865f2;
+}
+
+.discord-drag-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.discord-drag-content p {
+    margin: 0;
+    color: #b9bbbe;
 }
 
 /* User Panel */
