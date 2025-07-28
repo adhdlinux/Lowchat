@@ -234,63 +234,133 @@ function getAvatarColor(name) {
 function generateMediaHTML(fileInfo) {
 	console.log('Generating media HTML for:', fileInfo);
 
-	if (!fileInfo || !fileInfo.mimetype || !fileInfo.url) {
+	if (!fileInfo || !fileInfo.url) {
 		console.error('Invalid fileInfo:', fileInfo);
 		return '<div class="discord-media-message"><p>Error: Invalid file data</p></div>';
 	}
 
-	const isImage = fileInfo.mimetype.startsWith('image/');
-	const isAudio = fileInfo.mimetype.startsWith('audio/');
-	const isVideo = fileInfo.mimetype.startsWith('video/');
+	const fileName = fileInfo.originalName || 'Unknown file';
+	const fileSize = formatFileSize(fileInfo.size || 0);
+	const extension = fileName.split('.').pop()?.toLowerCase() || '';
+	const mimetype = fileInfo.mimetype || '';
 
-	console.log('File type detection:', { isImage, isAudio, isVideo, mimetype: fileInfo.mimetype });
+	// Comprehensive media type detection
+	const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'ico', 'tiff', 'avif'];
+	const videoTypes = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'wmv', 'flv', 'm4v', '3gp'];
+	const audioTypes = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac', 'wma', 'opus', 'webm'];
+
+	// Browser-supported video formats
+	const browserVideoFormats = ['mp4', 'webm', 'ogg'];
+	// Browser-supported audio formats
+	const browserAudioFormats = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'opus'];
+	// Browser-supported image formats
+	const browserImageFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'];
+
+	const isImage = imageTypes.includes(extension) || mimetype.startsWith('image/');
+	const isVideo = videoTypes.includes(extension) || mimetype.startsWith('video/');
+	const isAudio = audioTypes.includes(extension) || mimetype.startsWith('audio/');
+
+	const canDisplayImage = browserImageFormats.includes(extension) || mimetype.startsWith('image/');
+	const canDisplayVideo = browserVideoFormats.includes(extension) || ['video/mp4', 'video/webm', 'video/ogg'].includes(mimetype);
+	const canDisplayAudio = browserAudioFormats.includes(extension) || ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/mp4'].includes(mimetype);
+
+	console.log('File analysis:', {
+		extension, mimetype, isImage, isVideo, isAudio,
+		canDisplayImage, canDisplayVideo, canDisplayAudio
+	});
 
 	let html = '';
 
-	if (isImage) {
+	if (isImage && canDisplayImage) {
 		html = `<div class="discord-media-message">
-			<img src="${fileInfo.url}" alt="${fileInfo.originalName}" class="discord-image-attachment" loading="lazy" onload="console.log('Image loaded:', this.src)" onerror="console.error('Image failed to load:', this.src)">
+			<img src="${fileInfo.url}" alt="${fileName}" class="discord-image-attachment" loading="lazy"
+				 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+			<div class="discord-image-fallback" style="display: none;">
+				<div class="discord-file-attachment">
+					<div class="discord-file-icon">🖼️</div>
+					<div class="discord-file-info">
+						<div class="discord-file-name">${fileName}</div>
+						<div class="discord-file-size">${fileSize}</div>
+						<div class="discord-file-type">Image file</div>
+					</div>
+					<button class="discord-file-download" onclick="window.open('${fileInfo.url}', '_blank')">
+						<svg width="16" height="16" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+						</svg>
+						Download
+					</button>
+				</div>
+			</div>
 		</div>`;
-	} else if (isAudio) {
+	} else if (isVideo && canDisplayVideo) {
+		html = `<div class="discord-media-message">
+			<video controls class="discord-video-attachment" preload="metadata">
+				<source src="${fileInfo.url}" type="${mimetype}">
+				Your browser does not support this video format.
+			</video>
+			<div class="discord-video-info">
+				<span class="discord-video-name">${fileName}</span>
+				<span class="discord-video-size">${fileSize}</span>
+			</div>
+		</div>`;
+	} else if (isAudio && canDisplayAudio) {
 		html = `<div class="discord-media-message">
 			<div class="discord-audio-attachment">
 				<div class="discord-audio-info">
 					<div class="discord-audio-icon">🎵</div>
 					<div class="discord-audio-details">
-						<div class="discord-audio-name">${fileInfo.originalName}</div>
-						<div class="discord-audio-size">${formatFileSize(fileInfo.size)}</div>
+						<div class="discord-audio-name">${fileName}</div>
+						<div class="discord-audio-size">${fileSize}</div>
 					</div>
 				</div>
 				<audio controls class="discord-audio-controls" preload="metadata">
-					<source src="${fileInfo.url}" type="${fileInfo.mimetype}">
-					Your browser does not support the audio element.
+					<source src="${fileInfo.url}" type="${mimetype}">
+					Your browser does not support this audio format.
 				</audio>
 			</div>
 		</div>`;
-	} else if (isVideo) {
-		html = `<div class="discord-media-message">
-			<video controls class="discord-video-attachment" preload="metadata">
-				<source src="${fileInfo.url}" type="${fileInfo.mimetype}">
-				Your browser does not support the video element.
-			</video>
-		</div>`;
 	} else {
-		// Generic file
-		const extension = fileInfo.originalName.split('.').pop()?.toUpperCase() || 'FILE';
+		// Fallback for all other files or unsupported media
+		const fileIcon = getFileIcon(extension, isImage, isVideo, isAudio);
+		const fileType = isVideo ? 'Video file' : isAudio ? 'Audio file' : isImage ? 'Image file' : 'Document';
+
 		html = `<div class="discord-media-message">
 			<div class="discord-file-attachment">
-				<div class="discord-file-icon">${extension}</div>
+				<div class="discord-file-icon">${fileIcon}</div>
 				<div class="discord-file-info">
-					<div class="discord-file-name">${fileInfo.originalName}</div>
-					<div class="discord-file-size">${formatFileSize(fileInfo.size)}</div>
+					<div class="discord-file-name">${fileName}</div>
+					<div class="discord-file-size">${fileSize}</div>
+					<div class="discord-file-type">${fileType}</div>
 				</div>
-				<button class="discord-file-download" onclick="window.open('${fileInfo.url}', '_blank')">⬇</button>
+				<button class="discord-file-download" onclick="window.open('${fileInfo.url}', '_blank')">
+					<svg width="16" height="16" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+					</svg>
+					Download
+				</button>
 			</div>
 		</div>`;
 	}
 
 	console.log('Generated HTML:', html);
 	return html;
+}
+
+function getFileIcon(extension, isImage, isVideo, isAudio) {
+	if (isImage) return '🖼️';
+	if (isVideo) return '🎬';
+	if (isAudio) return '🎵';
+
+	const iconMap = {
+		'pdf': '📄', 'doc': '📄', 'docx': '��', 'txt': '📄',
+		'xls': '📊', 'xlsx': '📊', 'csv': '📊',
+		'ppt': '📊', 'pptx': '📊',
+		'zip': '📦', 'rar': '📦', '7z': '📦', 'tar': '📦',
+		'js': '💻', 'html': '💻', 'css': '💻', 'json': '💻',
+		'py': '🐍', 'java': '☕', 'cpp': '⚙️', 'c': '⚙️'
+	};
+
+	return iconMap[extension] || '📄';
 }
 
 function parseChatLog() {
