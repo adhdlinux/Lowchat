@@ -884,13 +884,22 @@ html, body {
 
 .discord-audio-controls {
     width: 100%;
+    margin-top: 8px;
+    background-color: #40444b;
+    border-radius: 6px;
+}
+
+.discord-audio-controls::-webkit-media-controls-panel {
+    background-color: #40444b;
 }
 
 .discord-video-attachment {
     border-radius: 8px;
     max-width: 100%;
+    max-height: 400px;
     height: auto;
     background-color: #000000;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .discord-file-attachment {
