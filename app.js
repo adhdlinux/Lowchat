@@ -122,9 +122,9 @@ function query(obj, and, db) {
 	db = db || io.of('/').sockets;
 	for (let i in keys) {
 		if (i > 0 && and) {
-			Object.keys(main).filter(el => db[el].proto[keys[i]] === values[i]).map(el => ret[el] = db[el]);
+			Object.keys(main).filter(el => db[el] && db[el].proto && db[el].proto[keys[i]] === values[i]).map(el => ret[el] = db[el]);
 		} else {
-			Object.keys(db).filter(el => db[el].proto[keys[i]] === values[i]).map(el => main[el] = db[el]);
+			Object.keys(db).filter(el => db[el] && db[el].proto && db[el].proto[keys[i]] === values[i]).map(el => main[el] = db[el]);
 		}
 	}
 	if (and) {
