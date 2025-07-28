@@ -541,9 +541,10 @@ async function uploadAndSendFiles() {
 			const file = filesToUpload[i];
 			const fileInfo = await uploadFile(file);
 
-			// Emit file message immediately after each upload
+			// Generate media HTML and include in message
+			const mediaHTML = generateMediaHTML(fileInfo);
 			const messageData = {
-				message: ``,
+				message: mediaHTML,
 				type: 'file',
 				fileInfo: fileInfo
 			};
