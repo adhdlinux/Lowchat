@@ -58,6 +58,46 @@ app.get('/:room', (req, res) => {
 	res.sendFile(__dirname + '/public/index.html');
 });
 
+// File upload endpoint
+app.post('/upload', upload.single('file'), async (req, res) => {
+	try {
+		if (!req.file) {
+			return res.status(400).json({ error: 'No file uploaded' });
+		}
+
+		const file = req.file;
+		const fileInfo = {
+			id: uuidv4(),
+			filename: file.filename,
+			originalName: file.originalname,
+			mimetype: file.mimetype,
+			size: file.size,
+			url: `/uploads/${file.filename}`,
+			uploadedAt: new Date()
+		};
+
+		// Generate thumbnail for images
+		if (file.mimetype.startsWith('image/')) {
+			try {
+				const thumbnailName = 'thumb_' + file.filename;
+				await sharp(file.path)
+					.resize(300, 300, { fit: 'inside', withoutEnlargement: true })
+					.jpeg({ quality: 80 })
+					.toFile(path.join('public/uploads', thumbnailName));
+
+				fileInfo.thumbnail = `/uploads/${thumbnailName}`;
+			} catch (err) {
+				console.log('Error generating thumbnail:', err);
+			}
+		}
+
+		res.json(fileInfo);
+	} catch (error) {
+		console.error('Upload error:', error);
+		res.status(500).json({ error: 'File upload failed' });
+	}
+});
+
 app.get('*', (req, res) => {
 	res.send('404 Not Found');
 });
