@@ -1,10 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
-const multer = require('multer');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const sharp = require('sharp');
 
 const app = express();
 const http = require('http').Server(app);
@@ -20,28 +16,6 @@ app.use(cookieParser());
 
 app.use(express.static('public'));
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-	destination: function (req, file, cb) {
-		cb(null, 'public/uploads/');
-	},
-	filename: function (req, file, cb) {
-		const uniqueName = uuidv4() + path.extname(file.originalname);
-		cb(null, uniqueName);
-	}
-});
-
-const upload = multer({
-	storage: storage,
-	limits: {
-		fileSize: 50 * 1024 * 1024 // 50MB limit
-	},
-	fileFilter: function (req, file, cb) {
-		// Accept all file types - we'll handle display logic on the frontend
-		return cb(null, true);
-	}
-});
-
 app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/public/index.html');
 });
@@ -50,56 +24,11 @@ app.get('/:room', (req, res) => {
 	res.sendFile(__dirname + '/public/index.html');
 });
 
-// File upload endpoint
-app.post('/upload', upload.single('file'), async (req, res) => {
-	try {
-		if (!req.file) {
-			return res.status(400).json({ error: 'No file uploaded' });
-		}
-
-		const file = req.file;
-		const fileInfo = {
-			id: uuidv4(),
-			filename: file.filename,
-			originalName: file.originalname,
-			mimetype: file.mimetype,
-			size: file.size,
-			url: `/uploads/${file.filename}`,
-			uploadedAt: new Date()
-		};
-
-		// Generate thumbnail for images
-		if (file.mimetype.startsWith('image/')) {
-			try {
-				const thumbnailName = 'thumb_' + file.filename;
-				const thumbnailPath = path.join(__dirname, 'public/uploads', thumbnailName);
-				await sharp(file.path)
-					.resize(300, 300, { fit: 'inside', withoutEnlargement: true })
-					.jpeg({ quality: 80 })
-					.toFile(thumbnailPath);
-
-				fileInfo.thumbnail = `/uploads/${thumbnailName}`;
-			} catch (err) {
-				console.log('Error generating thumbnail:', err);
-				// Continue without thumbnail
-			}
-		}
-
-		res.json(fileInfo);
-	} catch (error) {
-		console.error('Upload error:', error);
-		res.status(500).json({ error: 'File upload failed' });
-	}
-});
-
 app.get('*', (req, res) => {
 	res.send('404 Not Found');
 });
 
-const PORT = process.env.PORT || 3000;  // Use Heroku's dynamic port or fallback to 3000 locally
-
-http.listen(PORT, () => console.log(`Server started on port ${PORT}`));
-
+http.listen(process.env.PORT, () => console.log('server started'));
 
 io.engine.generateId = (req) => {
 	return randHex(6);
@@ -114,9 +43,9 @@ function query(obj, and, db) {
 	db = db || io.of('/').sockets;
 	for (let i in keys) {
 		if (i > 0 && and) {
-			Object.keys(main).filter(el => db[el] && db[el].proto && db[el].proto[keys[i]] === values[i]).map(el => ret[el] = db[el]);
+			Object.keys(main).filter(el => db[el].proto[keys[i]] === values[i]).map(el => ret[el] = db[el]);
 		} else {
-			Object.keys(db).filter(el => db[el] && db[el].proto && db[el].proto[keys[i]] === values[i]).map(el => main[el] = db[el]);
+			Object.keys(db).filter(el => db[el].proto[keys[i]] === values[i]).map(el => main[el] = db[el]);
 		}
 	}
 	if (and) {
@@ -134,9 +63,9 @@ function queryKeys(obj, and, db) {
 	db = db || io.of('/').sockets;
 	for (let i in keys) {
 		if (i > 0 && and) {
-			Object.keys(main).filter(el => db[el] && db[el].proto && db[el].proto[keys[i]] === values[i]).map(el => ret[el] = db[el]);
+			Object.keys(main).filter(el => db[el].proto[keys[i]] === values[i]).map(el => ret[el] = db[el]);
 		} else {
-			Object.keys(db).filter(el => db[el] && db[el].proto && db[el].proto[keys[i]] === values[i]).map(el => main[el] = db[el]);
+			Object.keys(db).filter(el => db[el].proto[keys[i]] === values[i]).map(el => main[el] = db[el]);
 		}
 	}
 	if (and) {
@@ -147,9 +76,6 @@ function queryKeys(obj, and, db) {
 }
 
 io.on('connection', (socket) => {
-	// Initialize socket properties immediately
-	defaults(socket);
-
 	socket.on('join', (data) => {
 		let room;
 		let rooms;
@@ -216,12 +142,7 @@ io.on('connection', (socket) => {
 		let allsockets = io.of('/').sockets;
 		let room = socket.proto.room;
 		defaults(sockets, true);
-
-		// Don't escape HTML for file messages that contain media HTML
-		if (data.type !== 'file') {
-			message = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-		}
-
+		message = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		if (message && !socket.proto.muted) {
 			if (message[0] === '/') {
 				let newname;
