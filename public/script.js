@@ -11,33 +11,39 @@ var lasttime = false;
 var version = '2.0';
 var unread = 0;
 var focus = true;
+var currentUsername = 'Guest';
 
 $(document).ready(function () {
-	$('.message').focus();
+	$('.discord-input').focus();
 
-	// Add the audio element to play the notification sound
-	$('body').append('<audio id="notificationSound" src="GOTMAIL.WAV" preload="auto"></audio>');
+	// Update channel name in header and current channel
+	updateChannelDisplay();
 
 	client.emit('join', room);
 	room = room.substr(1);
+	
 	if (localStorage.getItem('chatlog') && localStorage.getItem('version') === version) {
 		chatlog = JSON.parse(localStorage.getItem('chatlog'));
 		parseChatLog();
 	} else {
 		localStorage.setItem('version', version);
 	}
+	
 	client.on('bounce', function (data) {
 		switch (data.type) {
 			case 'join':
 				if (localStorage.getItem('username')) {
+					currentUsername = localStorage.getItem('username');
+					updateUserDisplay();
 					client.emit('message', {
 						message: `/nick ${localStorage.getItem('username')}`
 					});
 				}
-				document.title = `LowChat | ${room}`;
+				document.title = `Discord - ${room}`;
 				break;
 		}
 	});
+	
 	client.on('message', function (data) {
 		data.time = formatDate(new Date());
 		data.date = new Date();
@@ -46,30 +52,44 @@ $(document).ready(function () {
 		// Notification logic: If window is not in focus, increment unread and play sound
 		if (!focus) {
 			unread++;
-			document.title = `LowChat | ${room} (${unread})`;
+			document.title = `(${unread}) Discord - ${room}`;
 			$('#icon').prop('href', 'images/fav-unread.png');
 
 			// Play notification sound
-			document.getElementById('notificationSound').play();
+			try {
+				document.getElementById('notificationSound').play();
+			} catch(e) {
+				console.log('Could not play notification sound');
+			}
 		}
 	});
 
-	$('#message').on('keydown', function (e) {
+	$('.discord-input').on('keydown', function (e) {
 		let message = $(this).text();
 		if (e.keyCode === 13 && !e.shiftKey) {
 			e.preventDefault();
 			$(this).text('');
 			if (message.indexOf('/join') === 0) {
-				window.location.pathname = '/' + message.split(' ')[1];
+				let newRoom = message.split(' ')[1];
+				if (newRoom) {
+					window.location.pathname = '/' + newRoom;
+				}
 			} else if (message.indexOf('/clearlog') === 0) {
 				chatlog[room] = [];
 				localStorage.setItem('chatlog', JSON.stringify(chatlog));
 				location.reload();
 			} else if (message.indexOf('/clearname') === 0) {
 				localStorage.removeItem('username');
+				currentUsername = 'Guest';
+				updateUserDisplay();
 			} else {
 				if (message.indexOf('/nick') === 0) {
-					localStorage.setItem('username', message.split(' ')[1]);
+					let newName = message.split(' ')[1];
+					if (newName) {
+						localStorage.setItem('username', newName);
+						currentUsername = newName;
+						updateUserDisplay();
+					}
 				}
 				client.emit('message', {
 					message
@@ -79,26 +99,79 @@ $(document).ready(function () {
 			}
 		} else if (e.keyCode === 38) {
 			e.preventDefault();
-			$(this).text(chathistory[index]);
-			index = (index + 1) % chathistory.length;
+			if (chathistory.length > 0) {
+				$(this).text(chathistory[index]);
+				index = (index + 1) % chathistory.length;
+			}
 		} else if (e.keyCode === 40) {
 			e.preventDefault();
-			$(this).text(chathistory[index]);
-			index = index - 1 < 0 ? 0 : index - 1;
+			if (chathistory.length > 0) {
+				$(this).text(chathistory[index]);
+				index = index - 1 < 0 ? 0 : index - 1;
+			}
 		}
 	});
+
+	// Handle input placeholder update
+	updateInputPlaceholder();
 });
 
+function updateChannelDisplay() {
+	let channelName = room === 'main' ? 'general' : room.replace(/[^a-zA-Z0-9]/g, '');
+	$('#header-channel-name').text(channelName);
+	$('#current-channel .discord-channel-name').text(channelName);
+	updateInputPlaceholder();
+}
+
+function updateInputPlaceholder() {
+	let channelName = room === 'main' ? 'general' : room.replace(/[^a-zA-Z0-9]/g, '');
+	$('.discord-input').attr('data-placeholder', `Message #${channelName}`);
+}
+
+function updateUserDisplay() {
+	$('#current-username').text(currentUsername);
+	$('#user-avatar').text(getInitials(currentUsername));
+}
+
+function getInitials(name) {
+	if (!name || name === 'Guest') return '?';
+	if (name.startsWith('@')) name = name.substr(1);
+	
+	let words = name.split(' ');
+	if (words.length >= 2) {
+		return (words[0][0] + words[1][0]).toUpperCase();
+	}
+	return name.substr(0, 2).toUpperCase();
+}
+
+function getAvatarColor(name) {
+	if (!name) return '#5865f2';
+	
+	let hash = 0;
+	for (let i = 0; i < name.length; i++) {
+		hash = name.charCodeAt(i) + ((hash << 5) - hash);
+	}
+	
+	const colors = [
+		'#5865f2', '#57f287', '#fee75c', '#eb459e', '#ed4245',
+		'#f47fff', '#00d4aa', '#ff8a4b', '#1abc9c', '#3498db',
+		'#9b59b6', '#e67e22', '#e74c3c', '#f1c40f', '#2ecc71'
+	];
+	
+	return colors[Math.abs(hash) % colors.length];
+}
+
 function parseChatLog() {
-	if (chatlog) {
+	if (chatlog && chatlog[room]) {
 		for (let i in chatlog[room]) {
 			appendLog(chatlog[room][i], true);
 		}
 		appendLog({
-			name: '',
-			message: '====== CACHE ======',
-			color: 'white',
-			time: formatDate(new Date())
+			name: 'server',
+			message: '━━━━━━ Previously cached messages ━━━━━━',
+			color: 'server',
+			time: formatDate(new Date()),
+			date: new Date()
 		}, true);
 	}
 }
@@ -106,43 +179,87 @@ function parseChatLog() {
 function appendLog(data, avoid) {
 	let logdiv = document.getElementById('log');
 	let template = $('#itemTemplate').html();
-	let message = data.message.replace(/http(s)*:\/\/[^\s]*/g, '<a href="$&">$&</a>');
+	let message = data.message;
+	
+	// Convert URLs to links
+	message = message.replace(/http(s)*:\/\/[^\s]*/g, '<a href="$&" target="_blank">$&</a>');
+	
+	// Convert mentions to styled mentions
+	message = message.replace(/@(\w+)/g, '<span class="discord-mention">@$1</span>');
+	
+	// Convert inline code
+	message = message.replace(/`([^`]+)`/g, '<span class="discord-inline-code">$1</span>');
+	
 	let color = data.color || data.name;
 	let time = data.time;
-	let type = 'n';
+	let name = data.name;
+	let initials = getInitials(name);
+	let isServer = false;
+	let isPM = false;
+
 	if (data.name === 'server') {
 		template = template.replace('{{type}}', 'server');
-		data.name = ' * ';
+		name = '';
+		initials = '';
+		isServer = true;
 		avoid = true;
 	} else if (data.type && data.type === 'direct') {
 		template = template.replace('{{type}}', 'pm');
+		isPM = true;
 		avoid = true;
+	} else {
+		template = template.replace('{{type}}', 'normal');
 	}
-	data.date = new Date(data.date);
-	lasttime = new Date(lasttime);
-	console.log(data.message, days(data.date), days(new Date()));
+
+	// Handle date separators
+	data.date = data.date ? new Date(data.date) : new Date();
+	lasttime = lasttime ? new Date(lasttime) : new Date();
+	
 	if (data.date && lasttime && days(data.date) > days(lasttime)) {
 		appendLog({
-			name: '',
-			message: `------ ${data.date.toDateString()} ------`,
-			color: 'white',
+			name: 'server',
+			message: `━━━━━━ ${data.date.toDateString()} ━━━━━━`,
+			color: 'server',
 			time: formatDate(data.date),
 			date: false
 		}, true);
 	}
 	lasttime = data.date;
-	template = template.replace('{{name}}', data.name);
-	template = template.replace('{{message}}', message);
-	template = template.replace('{{color}}', color);
-	template = template.replace('{{time}}', time);
-	$('.log').append(template);
-	$('.log .item-name').each(function () {
-		$(this).css('color', '#' + $(this).data('color'));
-		if ($(this).text().match('@')) {
-			$(this).css('color', 'red');
+
+	// Replace template variables
+	template = template.replace(/\{\{name\}\}/g, name);
+	template = template.replace(/\{\{message\}\}/g, message);
+	template = template.replace(/\{\{color\}\}/g, color);
+	template = template.replace(/\{\{time\}\}/g, time);
+	template = template.replace(/\{\{initials\}\}/g, initials);
+	template = template.replace(/\{\{id\}\}/g, Date.now() + Math.random());
+
+	let $newMessage = $(template);
+	$newMessage.addClass('new-message');
+	
+	$('.discord-messages').append($newMessage);
+
+	// Apply username colors
+	$newMessage.find('.discord-message-username').each(function () {
+		let username = $(this).text();
+		if (username.includes('@')) {
+			$(this).css('color', '#f04747'); // Admin color
+		} else {
+			$(this).css('color', getAvatarColor(color));
 		}
 	});
+
+	// Apply avatar colors
+	$newMessage.find('.discord-message-avatar').each(function () {
+		if (!isServer) {
+			$(this).css('background', `linear-gradient(45deg, ${getAvatarColor(color)}, ${getAvatarColor(color + '2')})`);
+		}
+	});
+
+	// Scroll to bottom
 	logdiv.scrollTop = logdiv.scrollHeight;
+
+	// Save to chat log
 	if (!avoid) {
 		if (!chatlog[room]) {
 			chatlog[room] = [];
@@ -150,26 +267,53 @@ function appendLog(data, avoid) {
 		chatlog[room].push(data);
 		localStorage.setItem('chatlog', JSON.stringify(chatlog));
 	}
+
+	// Remove animation class after animation completes
+	setTimeout(() => {
+		$newMessage.removeClass('new-message');
+	}, 300);
 }
 
 function formatDate(date) {
-	let ampm = date.getHours() > 12 ? 'PM' : 'AM';
-	let hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
-	let minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
-	return `${hours}:${minutes} ${ampm}`;
+	let now = new Date();
+	let isToday = date.toDateString() === now.toDateString();
+	
+	if (isToday) {
+		return formatTime(date);
+	} else {
+		return date.toLocaleDateString('en-US', { 
+			month: 'short', 
+			day: 'numeric' 
+		}) + ' at ' + formatTime(date);
+	}
+}
+
+function formatTime(date) {
+	let hours = date.getHours();
+	let minutes = date.getMinutes();
+	let ampm = hours >= 12 ? 'PM' : 'AM';
+	
+	hours = hours % 12;
+	hours = hours ? hours : 12; // 0 should be 12
+	
+	let minutesStr = minutes < 10 ? '0' + minutes : minutes;
+	
+	return `${hours}:${minutesStr} ${ampm}`;
 }
 
 function days(date) {
-	date = date - date.getTimezoneOffset()*60;
-	return Math.round(date / 1000 / 60 / 60 / 24);
+	return Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
 }
 
+// Window focus/blur handlers
 $(window).focus(function () {
 	focus = true;
 	unread = 0;
-	document.title = 'LowChat | ' + room;
+	document.title = `Discord - ${room}`;
 	$('#icon').prop('href', 'images/fav.png');
 }).blur(function () {
 	focus = false;
 });
 
+// Initialize user display
+updateUserDisplay();
