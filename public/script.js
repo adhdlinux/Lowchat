@@ -400,14 +400,7 @@ function appendLog(data, avoid) {
 		localStorage.setItem('chatlog', JSON.stringify(chatlog));
 	}
 
-	// Handle file message display post-render
-	if (data.type === 'file' && data.fileInfo && !isServer) {
-		console.log('Processing file message:', data);
-		const messageText = $newMessage.find('.discord-message-text');
-		const mediaHTML = generateMediaHTML(data.fileInfo);
-		console.log('Generated media HTML:', mediaHTML);
-		messageText.html(mediaHTML);
-	}
+	// File messages now include HTML directly in the message content
 
 	// Remove animation class after animation completes
 	setTimeout(() => {
