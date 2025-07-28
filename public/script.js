@@ -519,26 +519,31 @@ function formatFileSize(bytes) {
 }
 
 async function uploadAndSendFiles() {
-	const uploadPromises = filesToUpload.map(file => uploadFile(file));
+	// Show progress and disable send button
+	$('#sendFiles').prop('disabled', true).html('<div class="discord-upload-spinner"></div> Uploading...');
 
 	try {
-		const uploadedFiles = await Promise.all(uploadPromises);
+		for (let i = 0; i < filesToUpload.length; i++) {
+			const file = filesToUpload[i];
+			const fileInfo = await uploadFile(file);
 
-		// Send file message for each uploaded file
-		uploadedFiles.forEach(fileInfo => {
-			const message = {
+			// Emit file message immediately after each upload
+			const messageData = {
+				message: ``,
 				type: 'file',
-				fileInfo: fileInfo,
-				message: `📎 ${fileInfo.originalName}`
+				fileInfo: fileInfo
 			};
 
-			client.emit('message', message);
-		});
+			console.log('Sending file message:', messageData);
+			client.emit('message', messageData);
+		}
 
 		clearFilePreview();
 	} catch (error) {
 		console.error('Error uploading files:', error);
 		alert('Error uploading files. Please try again.');
+		// Re-enable send button on error
+		$('#sendFiles').prop('disabled', false).text('Send');
 	}
 }
 
