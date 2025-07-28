@@ -1,6 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const multer = require('multer');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+const sharp = require('sharp');
 
 const app = express();
 const http = require('http').Server(app);
