@@ -155,6 +155,9 @@ function queryKeys(obj, and, db) {
 }
 
 io.on('connection', (socket) => {
+	// Initialize socket properties immediately
+	defaults(socket);
+
 	socket.on('join', (data) => {
 		let room;
 		let rooms;
