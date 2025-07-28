@@ -20,6 +20,36 @@ app.use(cookieParser());
 
 app.use(express.static('public'));
 
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, 'public/uploads/');
+	},
+	filename: function (req, file, cb) {
+		const uniqueName = uuidv4() + path.extname(file.originalname);
+		cb(null, uniqueName);
+	}
+});
+
+const upload = multer({
+	storage: storage,
+	limits: {
+		fileSize: 50 * 1024 * 1024 // 50MB limit
+	},
+	fileFilter: function (req, file, cb) {
+		// Allow images, audio, and video files
+		const allowedTypes = /jpeg|jpg|png|gif|webp|mp3|wav|ogg|m4a|aac|flac|mp4|webm|mov/;
+		const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+		const mimetype = allowedTypes.test(file.mimetype);
+
+		if (mimetype && extname) {
+			return cb(null, true);
+		} else {
+			cb(new Error('Only image, audio, and video files are allowed!'));
+		}
+	}
+});
+
 app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/public/index.html');
 });
