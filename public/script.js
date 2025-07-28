@@ -234,16 +234,25 @@ function getAvatarColor(name) {
 function generateMediaHTML(fileInfo) {
 	console.log('Generating media HTML for:', fileInfo);
 
+	if (!fileInfo || !fileInfo.mimetype || !fileInfo.url) {
+		console.error('Invalid fileInfo:', fileInfo);
+		return '<div class="discord-media-message"><p>Error: Invalid file data</p></div>';
+	}
+
 	const isImage = fileInfo.mimetype.startsWith('image/');
 	const isAudio = fileInfo.mimetype.startsWith('audio/');
 	const isVideo = fileInfo.mimetype.startsWith('video/');
 
+	console.log('File type detection:', { isImage, isAudio, isVideo, mimetype: fileInfo.mimetype });
+
+	let html = '';
+
 	if (isImage) {
-		return `<div class="discord-media-message">
-			<img src="${fileInfo.url}" alt="${fileInfo.originalName}" class="discord-image-attachment" loading="lazy">
+		html = `<div class="discord-media-message">
+			<img src="${fileInfo.url}" alt="${fileInfo.originalName}" class="discord-image-attachment" loading="lazy" onload="console.log('Image loaded:', this.src)" onerror="console.error('Image failed to load:', this.src)">
 		</div>`;
 	} else if (isAudio) {
-		return `<div class="discord-media-message">
+		html = `<div class="discord-media-message">
 			<div class="discord-audio-attachment">
 				<div class="discord-audio-info">
 					<div class="discord-audio-icon">🎵</div>
@@ -259,7 +268,7 @@ function generateMediaHTML(fileInfo) {
 			</div>
 		</div>`;
 	} else if (isVideo) {
-		return `<div class="discord-media-message">
+		html = `<div class="discord-media-message">
 			<video controls class="discord-video-attachment" preload="metadata">
 				<source src="${fileInfo.url}" type="${fileInfo.mimetype}">
 				Your browser does not support the video element.
@@ -268,7 +277,7 @@ function generateMediaHTML(fileInfo) {
 	} else {
 		// Generic file
 		const extension = fileInfo.originalName.split('.').pop()?.toUpperCase() || 'FILE';
-		return `<div class="discord-media-message">
+		html = `<div class="discord-media-message">
 			<div class="discord-file-attachment">
 				<div class="discord-file-icon">${extension}</div>
 				<div class="discord-file-info">
@@ -279,6 +288,9 @@ function generateMediaHTML(fileInfo) {
 			</div>
 		</div>`;
 	}
+
+	console.log('Generated HTML:', html);
+	return html;
 }
 
 function parseChatLog() {
