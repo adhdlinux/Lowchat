@@ -393,8 +393,8 @@ function appendLog(data, avoid) {
 		console.log('Processing file message:', data);
 		const messageText = $newMessage.find('.discord-message-text');
 		const mediaHTML = generateMediaHTML(data.fileInfo);
-		const fileDescription = data.message || `📎 ${data.fileInfo.originalName}`;
-		messageText.html(fileDescription + mediaHTML);
+		console.log('Generated media HTML:', mediaHTML);
+		messageText.html(mediaHTML);
 	}
 
 	// Remove animation class after animation completes
