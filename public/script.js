@@ -328,7 +328,9 @@ function generateMediaHTML(fileInfo) {
 			<div class="discord-file-attachment">
 				<div class="discord-file-icon">${fileIcon}</div>
 				<div class="discord-file-info">
-					<div class="discord-file-name">${fileName}</div>
+					<div class="discord-file-name">
+						<a href="${fileInfo.url}" target="_blank" class="discord-file-link">${fileName}</a>
+					</div>
 					<div class="discord-file-size">${fileSize}</div>
 					<div class="discord-file-type">${fileType}</div>
 				</div>
@@ -352,7 +354,7 @@ function getFileIcon(extension, isImage, isVideo, isAudio) {
 	if (isAudio) return '🎵';
 
 	const iconMap = {
-		'pdf': '📄', 'doc': '📄', 'docx': '��', 'txt': '📄',
+		'pdf': '📄', 'doc': '📄', 'docx': '📄', 'txt': '📄',
 		'xls': '📊', 'xlsx': '📊', 'csv': '📊',
 		'ppt': '📊', 'pptx': '📊',
 		'zip': '📦', 'rar': '📦', '7z': '📦', 'tar': '📦',
