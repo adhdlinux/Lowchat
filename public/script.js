@@ -119,6 +119,71 @@ $(document).ready(function () {
 
 	// Handle input placeholder update
 	updateInputPlaceholder();
+
+	// File upload button click
+	$('#fileUploadBtn').click(function() {
+		$('#hiddenFileInput').click();
+	});
+
+	// Hidden file input change
+	$('#hiddenFileInput').change(function(e) {
+		handleFileSelection(e.target.files);
+		$(this).val(''); // Reset input
+	});
+
+	// Drag and drop handlers
+	$(document).on('dragover', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$('#dragOverlay').show();
+	});
+
+	$(document).on('dragleave', function(e) {
+		if (e.target === document) {
+			$('#dragOverlay').hide();
+		}
+	});
+
+	$(document).on('drop', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$('#dragOverlay').hide();
+
+		const files = e.originalEvent.dataTransfer.files;
+		if (files.length > 0) {
+			handleFileSelection(files);
+		}
+	});
+
+	// File preview actions
+	$('#sendFiles').click(function() {
+		uploadAndSendFiles();
+	});
+
+	$('#cancelFiles').click(function() {
+		clearFilePreview();
+	});
+
+	$('#filePreviewClose').click(function() {
+		clearFilePreview();
+	});
+
+	// Voice recording
+	$('#voiceRecordBtn').click(function() {
+		if (mediaRecorder && mediaRecorder.state === 'recording') {
+			stopRecording();
+		} else {
+			startRecording();
+		}
+	});
+
+	$('#stopRecording').click(function() {
+		stopRecording();
+	});
+
+	$('#cancelRecording').click(function() {
+		cancelRecording();
+	});
 });
 
 function updateChannelDisplay() {
