@@ -994,3 +994,14 @@ html, body {
     width: 14px;
     height: 14px;
 }
+
+.discord-file-link {
+    color: #00aff4;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.discord-file-link:hover {
+    text-decoration: underline;
+    color: #4fc3f7;
+}
