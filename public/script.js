@@ -12,6 +12,11 @@ var version = '2.0';
 var unread = 0;
 var focus = true;
 var currentUsername = 'Guest';
+var filesToUpload = [];
+var mediaRecorder = null;
+var recordingChunks = [];
+var recordingStartTime = null;
+var recordingInterval = null;
 
 $(document).ready(function () {
 	$('.discord-input').focus();
