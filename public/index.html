@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>LowChat v2</title>
+	<title>Discord - LowChat v2</title>
 	<link href="style.css" rel="stylesheet" type="text/css" />
 	<link rel="shortcut icon" href="images/fav.png" id="icon" />
 	<base target="_blank">
@@ -12,22 +12,107 @@
 
 <body>
     <audio id="notificationSound" src="GOTMAIL.WAV" preload="auto"></audio>
-	<div class="app">
-		<div class="log" id="log">
-		</div>
-		<div class="box">
-			<p class="message" id="message" contenteditable="true"></p>
-		</div>
-		<template id="itemTemplate">
-			<div class="item {{type}}">
-				<p class="item-time">{{time}}</p>
-				<p class="item-name" data-color="{{color}}">{{name}}</p>
-				<p class="item-message">{{message}}</p>
+	
+	<div class="discord-app">
+		<!-- Left Sidebar -->
+		<div class="discord-sidebar">
+			<div class="discord-server-list">
+				<div class="discord-server discord-server-active">
+					<div class="discord-server-icon">LC</div>
+				</div>
 			</div>
-		</template>
-		<script src="/socket.io/socket.io.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-		<script src="script.js"></script>
+			
+			<div class="discord-channel-list">
+				<div class="discord-server-name">LowChat Server</div>
+				<div class="discord-channel-category">
+					<span class="discord-category-name">TEXT CHANNELS</span>
+				</div>
+				<div class="discord-channel discord-channel-active" id="current-channel">
+					<span class="discord-channel-hash">#</span>
+					<span class="discord-channel-name">general</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Main Chat Area -->
+		<div class="discord-main">
+			<!-- Chat Header -->
+			<div class="discord-chat-header">
+				<div class="discord-channel-info">
+					<span class="discord-channel-hash">#</span>
+					<span class="discord-channel-name" id="header-channel-name">general</span>
+					<div class="discord-channel-divider"></div>
+					<span class="discord-channel-topic">Welcome to LowChat v2 - A Discord-style chat experience</span>
+				</div>
+			</div>
+
+			<!-- Messages Container -->
+			<div class="discord-messages" id="log">
+				<!-- Welcome message will be added here -->
+			</div>
+
+			<!-- Message Input Area -->
+			<div class="discord-chat-input-container">
+				<div class="discord-chat-input">
+					<div class="discord-input-wrapper">
+						<div class="discord-input" id="message" contenteditable="true" data-placeholder="Message #general"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- User Panel -->
+		<div class="discord-user-panel">
+			<div class="discord-user-info">
+				<div class="discord-avatar">
+					<div class="discord-avatar-inner" id="user-avatar">?</div>
+					<div class="discord-status-indicator discord-status-online"></div>
+				</div>
+				<div class="discord-user-details">
+					<div class="discord-username" id="current-username">Guest</div>
+					<div class="discord-user-tag">#0001</div>
+				</div>
+			</div>
+			<div class="discord-user-controls">
+				<div class="discord-icon-button" title="Mute">
+					<svg width="20" height="20" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+					</svg>
+				</div>
+				<div class="discord-icon-button" title="Deafen">
+					<svg width="20" height="20" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+					</svg>
+				</div>
+				<div class="discord-icon-button" title="Settings">
+					<svg width="20" height="20" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+					</svg>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<template id="itemTemplate">
+		<div class="discord-message {{type}}" data-message-id="{{id}}">
+			<div class="discord-message-content">
+				<div class="discord-avatar-wrapper">
+					<div class="discord-message-avatar">{{initials}}</div>
+				</div>
+				<div class="discord-message-details">
+					<div class="discord-message-header">
+						<span class="discord-message-username" data-color="{{color}}">{{name}}</span>
+						<span class="discord-message-timestamp">{{time}}</span>
+					</div>
+					<div class="discord-message-text">{{message}}</div>
+				</div>
+			</div>
+		</div>
+	</template>
+	
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="script.js"></script>
 </body>
 
 </html>
