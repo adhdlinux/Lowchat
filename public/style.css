@@ -954,3 +954,43 @@ html, body {
 .discord-file-download:hover {
     background-color: #36393f;
 }
+
+.discord-video-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    padding: 4px 0;
+    color: #b9bbbe;
+    font-size: 0.75rem;
+}
+
+.discord-video-name {
+    font-weight: 500;
+}
+
+.discord-video-size {
+    color: #72767d;
+}
+
+.discord-file-type {
+    color: #72767d;
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+.discord-image-fallback {
+    margin-top: 8px;
+}
+
+.discord-file-download {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+}
+
+.discord-file-download svg {
+    width: 14px;
+    height: 14px;
+}
