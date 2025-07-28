@@ -80,14 +80,16 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 		if (file.mimetype.startsWith('image/')) {
 			try {
 				const thumbnailName = 'thumb_' + file.filename;
+				const thumbnailPath = path.join(__dirname, 'public/uploads', thumbnailName);
 				await sharp(file.path)
 					.resize(300, 300, { fit: 'inside', withoutEnlargement: true })
 					.jpeg({ quality: 80 })
-					.toFile(path.join('public/uploads', thumbnailName));
+					.toFile(thumbnailPath);
 
 				fileInfo.thumbnail = `/uploads/${thumbnailName}`;
 			} catch (err) {
 				console.log('Error generating thumbnail:', err);
+				// Continue without thumbnail
 			}
 		}
 
