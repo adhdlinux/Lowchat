@@ -385,5 +385,208 @@ $(window).focus(function () {
 	focus = false;
 });
 
+// File handling functions
+function handleFileSelection(files) {
+	filesToUpload = Array.from(files);
+	displayFilePreview();
+}
+
+function displayFilePreview() {
+	if (filesToUpload.length === 0) {
+		$('#filePreview').hide();
+		return;
+	}
+
+	const previewList = $('#filePreviewList');
+	previewList.empty();
+
+	filesToUpload.forEach((file, index) => {
+		const fileItem = $(`
+			<div class="discord-file-preview-item">
+				<div class="discord-file-preview-thumbnail" id="thumb-${index}">
+					${getFileIcon(file.type)}
+				</div>
+				<div class="discord-file-preview-info">
+					<div class="discord-file-preview-name">${file.name}</div>
+					<div class="discord-file-preview-size">${formatFileSize(file.size)}</div>
+				</div>
+				<button class="discord-file-preview-remove" onclick="removeFile(${index})">×</button>
+			</div>
+		`);
+
+		previewList.append(fileItem);
+
+		// Generate image thumbnail
+		if (file.type.startsWith('image/')) {
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				$(`#thumb-${index}`).html(`<img src="${e.target.result}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px;">`);
+			};
+			reader.readAsDataURL(file);
+		}
+	});
+
+	$('#filePreview').show();
+}
+
+function removeFile(index) {
+	filesToUpload.splice(index, 1);
+	displayFilePreview();
+}
+
+function clearFilePreview() {
+	filesToUpload = [];
+	$('#filePreview').hide();
+}
+
+function getFileIcon(mimeType) {
+	if (mimeType.startsWith('image/')) {
+		return '<svg width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5,4H19A2,2 0 0,1 21,6V18A2,2 0 0,1 19,20H5A2,2 0 0,1 3,18V6A2,2 0 0,1 5,4M5,16L8.5,12.5L11,15.5L14.5,11L19,16H5Z"/></svg>';
+	} else if (mimeType.startsWith('audio/')) {
+		return '<svg width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12,3V12.26C11.5,12.09 11,12 10.5,12C8.01,12 6,14.01 6,16.5C6,18.99 8.01,21 10.5,21C12.99,21 15,18.99 15,16.5V7H19V3H12Z"/></svg>';
+	} else if (mimeType.startsWith('video/')) {
+		return '<svg width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"/></svg>';
+	} else {
+		return '<svg width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>';
+	}
+}
+
+function formatFileSize(bytes) {
+	if (bytes === 0) return '0 Bytes';
+	const k = 1024;
+	const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+	const i = Math.floor(Math.log(bytes) / Math.log(k));
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function uploadAndSendFiles() {
+	const uploadPromises = filesToUpload.map(file => uploadFile(file));
+
+	try {
+		const uploadedFiles = await Promise.all(uploadPromises);
+
+		// Send file message for each uploaded file
+		uploadedFiles.forEach(fileInfo => {
+			const message = {
+				type: 'file',
+				fileInfo: fileInfo,
+				message: `📎 ${fileInfo.originalName}`
+			};
+
+			client.emit('message', message);
+		});
+
+		clearFilePreview();
+	} catch (error) {
+		console.error('Error uploading files:', error);
+		alert('Error uploading files. Please try again.');
+	}
+}
+
+async function uploadFile(file) {
+	const formData = new FormData();
+	formData.append('file', file);
+
+	const response = await fetch('/upload', {
+		method: 'POST',
+		body: formData
+	});
+
+	if (!response.ok) {
+		throw new Error('Upload failed');
+	}
+
+	return await response.json();
+}
+
+// Voice recording functions
+async function startRecording() {
+	try {
+		const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+		mediaRecorder = new MediaRecorder(stream);
+		recordingChunks = [];
+
+		mediaRecorder.ondataavailable = function(event) {
+			recordingChunks.push(event.data);
+		};
+
+		mediaRecorder.onstop = function() {
+			const blob = new Blob(recordingChunks, { type: 'audio/webm' });
+			uploadVoiceMessage(blob);
+			stream.getTracks().forEach(track => track.stop());
+		};
+
+		mediaRecorder.start();
+		recordingStartTime = Date.now();
+
+		$('#voiceRecordBtn').addClass('recording');
+		$('#voiceRecording').show();
+
+		// Update recording time
+		recordingInterval = setInterval(updateRecordingTime, 100);
+
+	} catch (error) {
+		console.error('Error starting recording:', error);
+		alert('Could not access microphone. Please check permissions.');
+	}
+}
+
+function stopRecording() {
+	if (mediaRecorder && mediaRecorder.state === 'recording') {
+		mediaRecorder.stop();
+		cleanupRecording();
+	}
+}
+
+function cancelRecording() {
+	if (mediaRecorder && mediaRecorder.state === 'recording') {
+		mediaRecorder.stop();
+	}
+	cleanupRecording();
+	recordingChunks = [];
+}
+
+function cleanupRecording() {
+	$('#voiceRecordBtn').removeClass('recording');
+	$('#voiceRecording').hide();
+	clearInterval(recordingInterval);
+	recordingStartTime = null;
+}
+
+function updateRecordingTime() {
+	if (recordingStartTime) {
+		const elapsed = (Date.now() - recordingStartTime) / 1000;
+		const minutes = Math.floor(elapsed / 60);
+		const seconds = Math.floor(elapsed % 60);
+		$('#recordingTime').text(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+	}
+}
+
+async function uploadVoiceMessage(blob) {
+	const formData = new FormData();
+	const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+	formData.append('file', file);
+
+	try {
+		const response = await fetch('/upload', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (response.ok) {
+			const fileInfo = await response.json();
+			const message = {
+				type: 'file',
+				fileInfo: fileInfo,
+				message: `🎤 Voice message`
+			};
+
+			client.emit('message', message);
+		}
+	} catch (error) {
+		console.error('Error uploading voice message:', error);
+	}
+}
+
 // Initialize user display
 updateUserDisplay();
