@@ -586,6 +586,25 @@ html, body {
     background-color: #c03537;
 }
 
+.discord-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.discord-upload-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff33;
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: discord-spin 1s ease-in-out infinite;
+}
+
+@keyframes discord-spin {
+    to { transform: rotate(360deg); }
+}
+
 /* Drag and Drop Overlay */
 .discord-drag-overlay {
     position: fixed;
