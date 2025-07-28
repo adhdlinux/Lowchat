@@ -231,6 +231,70 @@ function getAvatarColor(name) {
 	return colors[Math.abs(hash) % colors.length];
 }
 
+function generateMediaHTML(fileInfo) {
+	const isImage = fileInfo.mimetype.startsWith('image/');
+	const isAudio = fileInfo.mimetype.startsWith('audio/');
+	const isVideo = fileInfo.mimetype.startsWith('video/');
+
+	if (isImage) {
+		return `
+			<div class="discord-media-message">
+				<img src="${fileInfo.url}" alt="${fileInfo.originalName}" class="discord-image-attachment" onclick="window.open('${fileInfo.url}', '_blank')">
+			</div>
+		`;
+	} else if (isAudio) {
+		return `
+			<div class="discord-media-message">
+				<div class="discord-audio-attachment">
+					<div class="discord-audio-info">
+						<div class="discord-audio-icon">
+							<svg width="16" height="16" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M12,3V12.26C11.5,12.09 11,12 10.5,12C8.01,12 6,14.01 6,16.5C6,18.99 8.01,21 10.5,21C12.99,21 15,18.99 15,16.5V7H19V3H12Z"/>
+							</svg>
+						</div>
+						<div class="discord-audio-details">
+							<div class="discord-audio-name">${fileInfo.originalName}</div>
+							<div class="discord-audio-size">${formatFileSize(fileInfo.size)}</div>
+						</div>
+					</div>
+					<audio controls class="discord-audio-controls">
+						<source src="${fileInfo.url}" type="${fileInfo.mimetype}">
+						Your browser does not support the audio element.
+					</audio>
+				</div>
+			</div>
+		`;
+	} else if (isVideo) {
+		return `
+			<div class="discord-media-message">
+				<video controls class="discord-video-attachment">
+					<source src="${fileInfo.url}" type="${fileInfo.mimetype}">
+					Your browser does not support the video element.
+				</video>
+			</div>
+		`;
+	} else {
+		// Generic file
+		const extension = fileInfo.originalName.split('.').pop().toUpperCase();
+		return `
+			<div class="discord-media-message">
+				<div class="discord-file-attachment">
+					<div class="discord-file-icon">${extension}</div>
+					<div class="discord-file-info">
+						<div class="discord-file-name">${fileInfo.originalName}</div>
+						<div class="discord-file-size">${formatFileSize(fileInfo.size)}</div>
+					</div>
+					<button class="discord-file-download" onclick="window.open('${fileInfo.url}', '_blank')">
+						<svg width="16" height="16" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+						</svg>
+					</button>
+				</div>
+			</div>
+		`;
+	}
+}
+
 function parseChatLog() {
 	if (chatlog && chatlog[room]) {
 		for (let i in chatlog[room]) {
