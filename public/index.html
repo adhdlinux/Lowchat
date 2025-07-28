@@ -55,10 +55,69 @@
 			<div class="discord-chat-input-container">
 				<div class="discord-chat-input">
 					<div class="discord-input-wrapper">
+						<!-- File Upload Button -->
+						<div class="discord-file-upload-btn" id="fileUploadBtn" title="Upload a file">
+							<svg width="24" height="24" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+							</svg>
+						</div>
+
 						<div class="discord-input" id="message" contenteditable="true" data-placeholder="Message #general"></div>
+
+						<!-- Voice Recording Button -->
+						<div class="discord-voice-record-btn" id="voiceRecordBtn" title="Record voice message">
+							<svg width="24" height="24" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+							</svg>
+						</div>
+					</div>
+				</div>
+
+				<!-- File Preview Area -->
+				<div class="discord-file-preview" id="filePreview" style="display: none;">
+					<div class="discord-file-preview-content">
+						<div class="discord-file-preview-header">
+							<span>Upload Files</span>
+							<button class="discord-file-preview-close" id="filePreviewClose">&times;</button>
+						</div>
+						<div class="discord-file-preview-list" id="filePreviewList"></div>
+						<div class="discord-file-preview-actions">
+							<button class="discord-btn discord-btn-primary" id="sendFiles">Send</button>
+							<button class="discord-btn discord-btn-secondary" id="cancelFiles">Cancel</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Voice Recording UI -->
+				<div class="discord-voice-recording" id="voiceRecording" style="display: none;">
+					<div class="discord-voice-recording-content">
+						<div class="discord-voice-recording-indicator">
+							<div class="discord-recording-dot"></div>
+							<span>Recording... <span id="recordingTime">0:00</span></span>
+						</div>
+						<div class="discord-voice-recording-actions">
+							<button class="discord-btn discord-btn-danger" id="stopRecording">Stop & Send</button>
+							<button class="discord-btn discord-btn-secondary" id="cancelRecording">Cancel</button>
+						</div>
 					</div>
 				</div>
 			</div>
+
+			<!-- Drag and Drop Overlay -->
+			<div class="discord-drag-overlay" id="dragOverlay" style="display: none;">
+				<div class="discord-drag-content">
+					<div class="discord-drag-icon">
+						<svg width="64" height="64" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+						</svg>
+					</div>
+					<h3>Drop to upload</h3>
+					<p>Upload images, GIFs, audio files, and more</p>
+				</div>
+			</div>
+
+			<!-- Hidden File Input -->
+			<input type="file" id="hiddenFileInput" multiple accept="image/*,audio/*,video/*" style="display: none;">
 		</div>
 
 		<!-- User Panel -->
