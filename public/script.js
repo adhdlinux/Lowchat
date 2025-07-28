@@ -402,6 +402,15 @@ function appendLog(data, avoid) {
 		localStorage.setItem('chatlog', JSON.stringify(chatlog));
 	}
 
+	// Handle file message display post-render
+	if (data.type === 'file' && data.fileInfo && !isServer) {
+		const messageText = $newMessage.find('.discord-message-text');
+		const currentText = messageText.html();
+		if (!currentText.includes('discord-media-message')) {
+			messageText.html(currentText + generateMediaHTML(data.fileInfo));
+		}
+	}
+
 	// Remove animation class after animation completes
 	setTimeout(() => {
 		$newMessage.removeClass('new-message');
