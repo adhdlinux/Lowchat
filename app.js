@@ -224,7 +224,12 @@ io.on('connection', (socket) => {
 		let allsockets = io.of('/').sockets;
 		let room = socket.proto.room;
 		defaults(sockets, true);
-		message = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+		// Don't escape HTML for file messages that contain media HTML
+		if (data.type !== 'file') {
+			message = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		}
+
 		if (message && !socket.proto.muted) {
 			if (message[0] === '/') {
 				let newname;
