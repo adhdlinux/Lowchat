@@ -37,16 +37,8 @@ const upload = multer({
 		fileSize: 50 * 1024 * 1024 // 50MB limit
 	},
 	fileFilter: function (req, file, cb) {
-		// Allow images, audio, and video files
-		const allowedTypes = /jpeg|jpg|png|gif|webp|mp3|wav|ogg|m4a|aac|flac|mp4|webm|mov/;
-		const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-		const mimetype = allowedTypes.test(file.mimetype);
-
-		if (mimetype && extname) {
-			return cb(null, true);
-		} else {
-			cb(new Error('Only image, audio, and video files are allowed!'));
-		}
+		// Accept all file types - we'll handle display logic on the frontend
+		return cb(null, true);
 	}
 });
 
